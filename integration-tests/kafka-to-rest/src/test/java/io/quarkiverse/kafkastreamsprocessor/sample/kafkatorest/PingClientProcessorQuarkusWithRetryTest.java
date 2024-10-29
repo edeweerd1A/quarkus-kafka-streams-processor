@@ -49,7 +49,7 @@ import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufSerializer;
 
 import io.quarkiverse.kafkastreamsprocessor.api.exception.RetryableException;
 import io.quarkiverse.kafkastreamsprocessor.sample.message.PingMessage.Ping;
-import io.quarkiverse.kafkastreamsprocessor.spi.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 

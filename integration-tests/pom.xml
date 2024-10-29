@@ -16,6 +16,7 @@
     <module>simple</module>
     <module>stateful</module>
     <module>custom-serde</module>
+    <module>byte-array-in-protobuf-out</module>
   </modules>
   <build>
     <plugins>

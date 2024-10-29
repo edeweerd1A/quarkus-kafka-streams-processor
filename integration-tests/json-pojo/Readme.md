@@ -20,7 +20,7 @@ its transformation into new, different  `SamplePojo` events.
 The [PojoProcessor.java](./src/main/java/io/quarkiverse/kafkastreamsprocessor/sample/jsonpojo/PojoProcessor.java) is associated to a
 `KafkaStreams topology` that is built using a [CDI
 producer](https://docs.jboss.org/weld/reference/1.0.0/en-US/html/producermethods.html)
-backed by the CDI bean `io.quarkiverse.kafkastreamsprocessor.impl.TopologyProducer`
+backed by the CDI bean `io.quarkiverse.kafkastreamsprocessor.runtime.TopologyProducer`
 
 This  `io.quarkiverse.kafkastreamsprocessor.sample.jsonpojo.PojoProcessor`  also showcases the possibility to customize the serializer and
  deserializer referred to in the KStream's Topology: we introduce a
