@@ -42,7 +42,7 @@ import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufDeserializer;
 import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufSerializer;
 
 import io.quarkiverse.kafkastreamsprocessor.api.Processor;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkiverse.kafkastreamsprocessor.sample.message.PingMessage.Ping;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
@@ -55,7 +55,7 @@ public class Kafka2ProcessorTopologyDriverTest {
     Topology topology;
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     TopologyTestDriver testDriver;
 
@@ -69,10 +69,11 @@ public class Kafka2ProcessorTopologyDriverTest {
         config.put(StreamsConfig.APPLICATION_ID_CONFIG, "test");
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dummy:1234");
         testDriver = new TopologyTestDriver(topology, config);
-        testInputTopic = testDriver.createInputTopic(kStreamsProcessorConfig.input().topic().get(), new StringSerializer(),
+        testInputTopic = testDriver.createInputTopic(kStreamsProcessorRuntimeConfig.input().topic().get(),
+                new StringSerializer(),
                 new KafkaProtobufSerializer<Ping>());
 
-        testOutputTopic = testDriver.createOutputTopic(kStreamsProcessorConfig.output().topic().get(),
+        testOutputTopic = testDriver.createOutputTopic(kStreamsProcessorRuntimeConfig.output().topic().get(),
                 new StringDeserializer(),
                 new KafkaProtobufDeserializer<>(Ping.parser()));
     }

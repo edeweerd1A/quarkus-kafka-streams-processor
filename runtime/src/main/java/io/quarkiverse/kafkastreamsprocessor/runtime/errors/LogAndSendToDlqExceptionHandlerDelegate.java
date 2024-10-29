@@ -37,7 +37,7 @@ import org.apache.kafka.streams.processor.ProcessorContext;
 import io.quarkiverse.kafkastreamsprocessor.api.decorator.producer.ProducerOnSendInterceptor;
 import io.quarkiverse.kafkastreamsprocessor.runtime.KafkaClientSupplierDecorator;
 import io.quarkiverse.kafkastreamsprocessor.runtime.metrics.KafkaStreamsProcessorMetrics;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkus.arc.Unremovable;
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,7 +70,7 @@ public class LogAndSendToDlqExceptionHandlerDelegate implements DeserializationE
     /**
      * The class containing all the configuration related to kafka stream processor
      */
-    private final KStreamsProcessorConfig kStreamsProcessorConfig;
+    private final KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     /** True if the dead letter queue strategy is selected and properly configured */
     boolean sendToDlq;
@@ -88,18 +88,18 @@ public class LogAndSendToDlqExceptionHandlerDelegate implements DeserializationE
      * @param dlqMetadataHandler
      *        tool to enrich message metadata before sending them to the microservice's DLQ the configuration error
      *        strategy for the application. See { @link {@link ErrorHandlingStrategy}
-     * @param kStreamsProcessorConfig
+     * @param kStreamsProcessorRuntimeConfig
      *        The configuration related to kafka processor
      */
     @Inject
     public LogAndSendToDlqExceptionHandlerDelegate(KafkaClientSupplier kafkaClientSupplier,
             KafkaStreamsProcessorMetrics metrics,
             DlqMetadataHandler dlqMetadataHandler,
-            KStreamsProcessorConfig kStreamsProcessorConfig) {
+            KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig) {
         this.clientSupplier = kafkaClientSupplier;
         this.metrics = metrics;
         this.dlqMetadataHandler = dlqMetadataHandler;
-        this.kStreamsProcessorConfig = kStreamsProcessorConfig;
+        this.kStreamsProcessorRuntimeConfig = kStreamsProcessorRuntimeConfig;
     }
 
     /**
@@ -133,7 +133,7 @@ public class LogAndSendToDlqExceptionHandlerDelegate implements DeserializationE
 
         // We cannot use context.forward here: we are given a fake context without source information
         // https://issues.apache.org/jira/browse/KAFKA-9566
-        dlqProducer.send(new ProducerRecord<>(kStreamsProcessorConfig.dlq().topic().get(), null, record.timestamp(),
+        dlqProducer.send(new ProducerRecord<>(kStreamsProcessorRuntimeConfig.dlq().topic().get(), null, record.timestamp(),
                 record.key(), record.value(),
                 dlqMetadataHandler.withMetadata(record.headers(), record.topic(), record.partition(), exception)));
         dlqProducer.flush();
@@ -152,8 +152,8 @@ public class LogAndSendToDlqExceptionHandlerDelegate implements DeserializationE
     @Override
     public void configure(final Map<String, ?> configs) {
         // Resolve the DLQ strategy once to fail fast in case of misconfiguration
-        sendToDlq = ErrorHandlingStrategy.shouldSendToDlq(kStreamsProcessorConfig.errorStrategy(),
-                kStreamsProcessorConfig.dlq().topic());
+        sendToDlq = ErrorHandlingStrategy.shouldSendToDlq(kStreamsProcessorRuntimeConfig.errorStrategy(),
+                kStreamsProcessorRuntimeConfig.dlq().topic());
         if (sendToDlq) {
             Map<String, Object> dlqConfigMap = new HashMap<>(configs);
             dlqConfigMap.put(KafkaClientSupplierDecorator.DLQ_PRODUCER, true);

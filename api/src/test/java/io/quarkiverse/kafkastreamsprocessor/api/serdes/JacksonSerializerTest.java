@@ -20,13 +20,13 @@
 package io.quarkiverse.kafkastreamsprocessor.api.serdes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
 import org.apache.kafka.common.errors.SerializationException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -69,7 +69,7 @@ class JacksonSerializerTest {
 
     @Test
     void shouldReturnNullWhenNoPojoIsProvided() {
-        Assertions.assertNull(serializer.serialize("topic", null));
+        assertNull(serializer.serialize("topic", null));
     }
 
     @Data

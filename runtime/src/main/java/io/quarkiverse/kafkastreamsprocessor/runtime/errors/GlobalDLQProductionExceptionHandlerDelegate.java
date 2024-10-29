@@ -35,7 +35,7 @@ import org.apache.kafka.streams.errors.ProductionExceptionHandler;
 
 import io.quarkiverse.kafkastreamsprocessor.runtime.KafkaClientSupplierDecorator;
 import io.quarkiverse.kafkastreamsprocessor.runtime.metrics.KafkaStreamsProcessorMetrics;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkus.arc.Unremovable;
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,7 +74,7 @@ class GlobalDLQProductionExceptionHandlerDelegate implements ProductionException
     /**
      * Configuration class for Kafka Producer
      */
-    private final KStreamsProcessorConfig kStreamsProcessorConfig;
+    private final KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     /**
      * Kafka message producer responsible to send messages to the global DLQ
@@ -90,16 +90,16 @@ class GlobalDLQProductionExceptionHandlerDelegate implements ProductionException
      *        tool that enriches the metadata of messages with some context before sending them to the global DLQ
      * @param metrics
      *        the metrics container of this framework
-     * @param kStreamsProcessorConfig
+     * @param kStreamsProcessorRuntimeConfig
      */
     @Inject
     public GlobalDLQProductionExceptionHandlerDelegate(KafkaClientSupplier kafkaClientSupplier,
             DlqMetadataHandler dlqMetadataHandler, KafkaStreamsProcessorMetrics metrics,
-            KStreamsProcessorConfig kStreamsProcessorConfig) {
+            KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig) {
         this.clientSupplier = kafkaClientSupplier;
         this.dlqMetadataHandler = dlqMetadataHandler;
         this.metrics = metrics;
-        this.kStreamsProcessorConfig = kStreamsProcessorConfig;
+        this.kStreamsProcessorRuntimeConfig = kStreamsProcessorRuntimeConfig;
     }
 
     /**
@@ -111,7 +111,7 @@ class GlobalDLQProductionExceptionHandlerDelegate implements ProductionException
      */
     @Override
     public ProductionExceptionHandlerResponse handle(ProducerRecord<byte[], byte[]> record, Exception exception) {
-        if (kafkaProducer != null && kStreamsProcessorConfig.globalDlq().topic().isPresent()) {
+        if (kafkaProducer != null && kStreamsProcessorRuntimeConfig.globalDlq().topic().isPresent()) {
             sendToGlobalDlq(record, exception);
         } else {
             log.warn("Exception caught during production but no GlobalDLQ is configured, incoming message " +
@@ -128,7 +128,7 @@ class GlobalDLQProductionExceptionHandlerDelegate implements ProductionException
                 "topic: {}, partition: {}",
                 record.topic(), record.partition(), exception);
         ProducerRecord<byte[], byte[]> dlqRecord = new ProducerRecord<>(
-                kStreamsProcessorConfig.globalDlq().topic().get(),
+                kStreamsProcessorRuntimeConfig.globalDlq().topic().get(),
                 null, record.key(),
                 record.value(),
                 dlqMetadataHandler.withMetadata(record.headers(), record.topic(), record.partition(), exception));
@@ -147,10 +147,10 @@ class GlobalDLQProductionExceptionHandlerDelegate implements ProductionException
     public void configure(Map<String, ?> config) {
         Map<String, Object> producerConfig = (Map<String, Object>) config;
 
-        if (kStreamsProcessorConfig.globalDlq().topic().isPresent()) {
+        if (kStreamsProcessorRuntimeConfig.globalDlq().topic().isPresent()) {
             Map<String, Object> dqlProducerConfig = new HashMap<>(producerConfig);
             dqlProducerConfig.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG,
-                    kStreamsProcessorConfig.globalDlq().maxMessageSize());
+                    kStreamsProcessorRuntimeConfig.globalDlq().maxMessageSize());
             dqlProducerConfig.put(KafkaClientSupplierDecorator.DLQ_PRODUCER, true);
             kafkaProducer = new LogCallbackExceptionProducerDecorator(clientSupplier.getProducer(dqlProducerConfig));
         }

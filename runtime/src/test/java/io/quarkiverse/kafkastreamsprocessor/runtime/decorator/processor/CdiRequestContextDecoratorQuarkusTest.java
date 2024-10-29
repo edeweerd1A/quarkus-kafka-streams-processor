@@ -47,7 +47,7 @@ import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufDeserializer;
 import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufSerializer;
 
 import io.quarkiverse.kafkastreamsprocessor.runtime.decorator.request.RequestScopeConsumerProcessor;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkiverse.kafkastreamsprocessor.sample.message.PingMessage;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
@@ -57,7 +57,7 @@ import io.quarkus.test.junit.TestProfile;
 @TestProfile(CdiRequestContextDecoratorQuarkusTest.CdiRequestContextTestProfile.class)
 public class CdiRequestContextDecoratorQuarkusTest {
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     @ConfigProperty(name = "kafka.bootstrap.servers")
     String kafkaBootstrapServers;
@@ -75,7 +75,7 @@ public class CdiRequestContextDecoratorQuarkusTest {
                 "test", "true");
         consumer = new KafkaConsumer<>(consumerProps, new StringDeserializer(),
                 new KafkaProtobufDeserializer<>(PingMessage.Ping.parser()));
-        consumer.subscribe(List.of(kStreamsProcessorConfig.output().topic().get()));
+        consumer.subscribe(List.of(kStreamsProcessorRuntimeConfig.output().topic().get()));
     }
 
     @AfterEach
@@ -89,8 +89,8 @@ public class CdiRequestContextDecoratorQuarkusTest {
         // The processor forwards a message containing "processorUuid:requestScopedBeanUuid"
         // Call it twice to verify that the requestScopedBeanUuid changes
         PingMessage.Ping ping = PingMessage.Ping.newBuilder().setMessage("Hello world").build();
-        producer.send(new ProducerRecord<>(kStreamsProcessorConfig.input().topic().get(), ping));
-        producer.send(new ProducerRecord<>(kStreamsProcessorConfig.input().topic().get(), ping));
+        producer.send(new ProducerRecord<>(kStreamsProcessorRuntimeConfig.input().topic().get(), ping));
+        producer.send(new ProducerRecord<>(kStreamsProcessorRuntimeConfig.input().topic().get(), ping));
         producer.flush();
 
         ConsumerRecords<String, PingMessage.Ping> consumerRecords = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(10),

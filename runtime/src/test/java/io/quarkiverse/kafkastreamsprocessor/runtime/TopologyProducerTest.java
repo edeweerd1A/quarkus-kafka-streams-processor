@@ -52,24 +52,24 @@ import io.quarkiverse.kafkastreamsprocessor.api.configuration.ConfigurationCusto
 import io.quarkiverse.kafkastreamsprocessor.api.configuration.store.StoreConfiguration;
 import io.quarkiverse.kafkastreamsprocessor.api.decorator.producer.ProducerOnSendInterceptor;
 import io.quarkiverse.kafkastreamsprocessor.runtime.configuration.TopologyConfigurationImpl;
-import io.quarkiverse.kafkastreamsprocessor.runtime.mapping.SinkToTopicMappingBuilderImpl;
-import io.quarkiverse.kafkastreamsprocessor.runtime.mapping.SourceToTopicsMappingBuilderImpl;
 import io.quarkiverse.kafkastreamsprocessor.runtime.properties.DlqConfig;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
+import io.quarkiverse.kafkastreamsprocessor.spi.SinkToTopicMappingBuilder;
+import io.quarkiverse.kafkastreamsprocessor.spi.SourceToTopicsMappingBuilder;
 
 @ExtendWith(MockitoExtension.class)
 class TopologyProducerTest {
     @Mock
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     @Mock
     DlqConfig dlqConfig;
 
     @Mock
-    SourceToTopicsMappingBuilderImpl sourceToTopicsMappingBuilderImpl;
+    SourceToTopicsMappingBuilder SourceToTopicsMappingBuilder;
 
     @Mock
-    SinkToTopicMappingBuilderImpl sinkToTopicMappingBuilder;
+    SinkToTopicMappingBuilder sinkToTopicMappingBuilder;
 
     @Mock
     Instance<ConfigurationCustomizer> configCustomizer;
@@ -111,11 +111,11 @@ class TopologyProducerTest {
             Map<String, String[]> sourceToTopicMapping,
             Map<String, String> sinkToTopicMapping,
             String dlq) {
-        when(kStreamsProcessorConfig.dlq()).thenReturn(dlqConfig);
+        when(kStreamsProcessorRuntimeConfig.dlq()).thenReturn(dlqConfig);
         when(dlqConfig.topic()).thenReturn(Optional.ofNullable(dlq));
-        when(sourceToTopicsMappingBuilderImpl.sourceToTopicsMapping()).thenReturn(sourceToTopicMapping);
+        when(SourceToTopicsMappingBuilder.sourceToTopicsMapping()).thenReturn(sourceToTopicMapping);
         when(sinkToTopicMappingBuilder.sinkToTopicMapping()).thenReturn(sinkToTopicMapping);
-        TopologyProducer topologyProducer = new TopologyProducer(kStreamsProcessorConfig, configCustomizer, sourceToTopicsMappingBuilderImpl, sinkToTopicMappingBuilder, interceptors);
+        TopologyProducer topologyProducer = new TopologyProducer(kStreamsProcessorRuntimeConfig, configCustomizer, SourceToTopicsMappingBuilder, sinkToTopicMappingBuilder, interceptors);
         return topologyProducer;
     }
 

@@ -64,7 +64,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.quarkiverse.kafkastreamsprocessor.api.Processor;
 import io.quarkiverse.kafkastreamsprocessor.propagation.KafkaTextMapSetter;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkiverse.kafkastreamsprocessor.runtime.protocol.KafkaStreamsProcessorHeaders;
 import io.quarkiverse.kafkastreamsprocessor.runtime.utils.TestSpanExporter;
 import io.quarkiverse.kafkastreamsprocessor.sample.message.PingMessage.Ping;
@@ -85,7 +85,7 @@ public class KStreamTopologyDriverTest {
     TopologyTestDriver testDriver;
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     TestInputTopic<String, Ping> testInputTopic;
 
@@ -114,9 +114,10 @@ public class KStreamTopologyDriverTest {
         config.put(StreamsConfig.APPLICATION_ID_CONFIG, "test");
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dummy:1234");
         testDriver = new TopologyTestDriver(topology, config);
-        testInputTopic = testDriver.createInputTopic(kStreamsProcessorConfig.input().topic().get(), new StringSerializer(),
+        testInputTopic = testDriver.createInputTopic(kStreamsProcessorRuntimeConfig.input().topic().get(),
+                new StringSerializer(),
                 new KafkaProtobufSerializer<Ping>());
-        testOutputTopic = testDriver.createOutputTopic(kStreamsProcessorConfig.output().topic().get(),
+        testOutputTopic = testDriver.createOutputTopic(kStreamsProcessorRuntimeConfig.output().topic().get(),
                 new StringDeserializer(),
                 new KafkaProtobufDeserializer<>(Ping.parser()));
 

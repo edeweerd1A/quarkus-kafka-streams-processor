@@ -48,7 +48,7 @@ import io.quarkiverse.kafkastreamsprocessor.api.configuration.Configuration;
 import io.quarkiverse.kafkastreamsprocessor.api.configuration.ConfigurationCustomizer;
 import io.quarkiverse.kafkastreamsprocessor.api.serdes.JacksonSerde;
 import io.quarkiverse.kafkastreamsprocessor.api.serdes.JacksonSerializer;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
@@ -66,7 +66,7 @@ public class CustomTopologyWithPojoDriverTest {
     TopologyTestDriver testDriver;
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     TestInputTopic<String, String> testInputTopic;
 
@@ -78,9 +78,9 @@ public class CustomTopologyWithPojoDriverTest {
         config.put(StreamsConfig.APPLICATION_ID_CONFIG, "test");
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dummy:1234");
         testDriver = new TopologyTestDriver(topology, config);
-        testInputTopic = testDriver.createInputTopic(kStreamsProcessorConfig.input().topic().get(),
+        testInputTopic = testDriver.createInputTopic(kStreamsProcessorRuntimeConfig.input().topic().get(),
                 new StringSerializer(), new StringSerializer());
-        testOutputTopic = testDriver.createOutputTopic(kStreamsProcessorConfig.output().topic().get(),
+        testOutputTopic = testDriver.createOutputTopic(kStreamsProcessorRuntimeConfig.output().topic().get(),
                 new StringDeserializer(),
                 new StringDeserializer());
     }

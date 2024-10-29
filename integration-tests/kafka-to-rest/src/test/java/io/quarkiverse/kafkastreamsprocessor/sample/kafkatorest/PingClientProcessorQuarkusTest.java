@@ -45,8 +45,8 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
 import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufDeserializer;
 import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufSerializer;
 
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkiverse.kafkastreamsprocessor.sample.message.PingMessage.Ping;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -54,7 +54,7 @@ class PingClientProcessorQuarkusTest {
     private ClientAndServer httpServer;
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     @ConfigProperty(name = "kafka.bootstrap.servers")
     String kafkaBootstrapServers;
@@ -70,7 +70,7 @@ class PingClientProcessorQuarkusTest {
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(kafkaBootstrapServers, "test", "true");
         consumer = new KafkaConsumer<>(consumerProps, new StringDeserializer(),
                 new KafkaProtobufDeserializer<>(Ping.parser()));
-        consumer.subscribe(List.of(kStreamsProcessorConfig.output().topic().get()));
+        consumer.subscribe(List.of(kStreamsProcessorRuntimeConfig.output().topic().get()));
         httpServer = ClientAndServer.startClientAndServer(9095);
     }
 
@@ -87,12 +87,12 @@ class PingClientProcessorQuarkusTest {
                 .when(request().withPath("/ping"))
                 .respond(response("PONG"));
 
-        producer.send(new ProducerRecord<>(kStreamsProcessorConfig.input().topic().get(),
+        producer.send(new ProducerRecord<>(kStreamsProcessorRuntimeConfig.input().topic().get(),
                 Ping.newBuilder().setMessage("hello").build()));
         producer.flush();
 
         ConsumerRecord<String, Ping> singleRecord = KafkaTestUtils.getSingleRecord(consumer,
-                kStreamsProcessorConfig.output().topic().get(),
+                kStreamsProcessorRuntimeConfig.output().topic().get(),
                 Durations.TEN_SECONDS);
         consumer.commitSync();
 

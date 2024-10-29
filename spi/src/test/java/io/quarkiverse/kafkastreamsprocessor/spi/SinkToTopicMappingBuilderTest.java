@@ -1,4 +1,4 @@
-package io.quarkiverse.kafkastreamsprocessor.runtime.mapping;
+package io.quarkiverse.kafkastreamsprocessor.spi;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -18,8 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@Deprecated
-public class SinkToTopicMappingBuilderImplFromConfigTest {
+class SinkToTopicMappingBuilderTest {
 
     @Mock
     Config config;
@@ -37,23 +36,22 @@ public class SinkToTopicMappingBuilderImplFromConfigTest {
     @Test
     void sinkToTopicMapping_whenSingleSink_shouldGenerateMapping() {
         mockProperties(Map.of("something.else", "value",
-                "kafkastreamsprocessor.output.sinks.ping.topic", "ping-topic"));
+                "quarkus.kafkastreamsprocessor.output.sinks.ping.topic", "ping-topic"));
 
         ;
-        Map<String, String> sinkToTopicMapping = new SinkToTopicMappingBuilderImpl(
-                KStreamsProcessorConfigGenerator.buildConfig(config)).sinkToTopicMapping();
+        Map<String, String> sinkToTopicMapping = new SinkToTopicMappingBuilder(
+                config).sinkToTopicMapping();
 
         assertEquals(Map.of("ping", "ping-topic"), sinkToTopicMapping);
     }
 
     @Test
     void sinkToTopicMapping_whenMultipleSinks_shouldGenerateMapping() {
-        mockProperties(Map.of("kafkastreamsprocessor.output.sinks.pong.topic", "pong-topic",
-                "kafkastreamsprocessor.output.sinks.ping.topic", "ping-topic",
-                "kafkastreamsprocessor.output.sinks.pang.topic", "pang-topic"));
+        mockProperties(Map.of("quarkus.kafkastreamsprocessor.output.sinks.pong.topic", "pong-topic",
+                "quarkus.kafkastreamsprocessor.output.sinks.ping.topic", "ping-topic",
+                "quarkus.kafkastreamsprocessor.output.sinks.pang.topic", "pang-topic"));
 
-        Map<String, String> sinkToTopicMapping = new SinkToTopicMappingBuilderImpl(
-                KStreamsProcessorConfigGenerator.buildConfig(config)).sinkToTopicMapping();
+        Map<String, String> sinkToTopicMapping = new SinkToTopicMappingBuilder(config).sinkToTopicMapping();
 
         assertEquals(Map.of("ping", "ping-topic", "pong", "pong-topic", "pang", "pang-topic"),
                 sinkToTopicMapping);
@@ -61,10 +59,9 @@ public class SinkToTopicMappingBuilderImplFromConfigTest {
 
     @Test
     void sinkToTopicMapping_whenSinkWitDash_shouldGenerateMapping() {
-        mockProperties(Map.of("kafkastreamsprocessor.output.sinks.my-channel.topic", "my-topic"));
+        mockProperties(Map.of("quarkus.kafkastreamsprocessor.output.sinks.my-channel.topic", "my-topic"));
 
-        Map<String, String> sinkToTopicMapping = new SinkToTopicMappingBuilderImpl(
-                KStreamsProcessorConfigGenerator.buildConfig(config)).sinkToTopicMapping();
+        Map<String, String> sinkToTopicMapping = new SinkToTopicMappingBuilder(config).sinkToTopicMapping();
 
         assertEquals(Map.of("my-channel", "my-topic"), sinkToTopicMapping);
 
@@ -72,34 +69,31 @@ public class SinkToTopicMappingBuilderImplFromConfigTest {
 
     @Test
     void sinkToTopicMapping_whenNoSinkButOutputTopic_shouldGenerateMapping() {
-        mockProperties(Map.of("kafkastreamsprocessor.output.topic", "ping-topic",
+        mockProperties(Map.of("quarkus.kafkastreamsprocessor.output.topic", "ping-topic",
                 "something.else", "value",
-                "kafkastreamsprocessor.output.sinks.incorrect", "missing-dot-topic",
-                "kafkastreamsprocessor.output.sinks.incorrect.notopic", "invalid-suffix"));
+                "quarkus.kafkastreamsprocessor.output.sinks.incorrect", "missing-dot-topic",
+                "quarkus.kafkastreamsprocessor.output.sinks.incorrect.notopic", "invalid-suffix"));
 
-        Map<String, String> sinkToTopicMapping = new SinkToTopicMappingBuilderImpl(
-                KStreamsProcessorConfigGenerator.buildConfig(config)).sinkToTopicMapping();
+        Map<String, String> sinkToTopicMapping = new SinkToTopicMappingBuilder(config).sinkToTopicMapping();
 
         assertEquals(Map.of("emitter-channel", "ping-topic"), sinkToTopicMapping);
     }
 
     @Test
     void sinkWithDot() {
-        mockProperties(Map.of("kafkastreamsprocessor.output.sinks..incorrect.topic", "too-many-dotsinvalid-suffix"));
+        mockProperties(Map.of("quarkus.kafkastreamsprocessor.output.sinks..incorrect.topic", "too-many-dotsinvalid-suffix"));
 
         assertThrows(IllegalStateException.class,
-                () -> new SinkToTopicMappingBuilderImpl(KStreamsProcessorConfigGenerator.buildConfig(config))
-                        .sinkToTopicMapping());
+                () -> new SinkToTopicMappingBuilder(config).sinkToTopicMapping());
     }
 
     @Test
     void sinkToTopicMapping_whenNoSinkAndNoOutputTopic_shouldGenerateEmptyMapping() {
         mockProperties(Map.of("something.else", "value",
-                "kafkastreamsprocessor.output.sinks.incorrect", "missing-dot-topic",
-                "kafkastreamsprocessor.output.sinks.incorrect.notopic", "invalid-suffix"));
+                "quarkus.kafkastreamsprocessor.output.sinks.incorrect", "missing-dot-topic",
+                "quarkus.kafkastreamsprocessor.output.sinks.incorrect.notopic", "invalid-suffix"));
 
-        Map<String, String> sinkToTopicMapping = new SinkToTopicMappingBuilderImpl(
-                KStreamsProcessorConfigGenerator.buildConfig(config)).sinkToTopicMapping();
+        Map<String, String> sinkToTopicMapping = new SinkToTopicMappingBuilder(config).sinkToTopicMapping();
 
         assertThat(sinkToTopicMapping, anEmptyMap());
     }

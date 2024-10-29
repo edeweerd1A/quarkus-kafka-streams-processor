@@ -39,7 +39,7 @@ import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkiverse.kafkastreamsprocessor.testframework.StateDirCleaningResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -55,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProcessorHealthCheckQuarkusTest {
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     @ConfigProperty(name = "quarkus.kafka-streams.application-id")
     String applicationName;
@@ -76,8 +76,8 @@ public class ProcessorHealthCheckQuarkusTest {
         checkReadiness().responseCode(200)
                 .isUp(true)
                 .topicsCheck(true,
-                        kStreamsProcessorConfig.input().topic().get() + ","
-                                + kStreamsProcessorConfig.output().topic().get()
+                        kStreamsProcessorRuntimeConfig.input().topic().get() + ","
+                                + kStreamsProcessorRuntimeConfig.output().topic().get()
                                 + ","
                                 + storeTopic,
                         null)
@@ -85,7 +85,7 @@ public class ProcessorHealthCheckQuarkusTest {
 
         try (AdminClient admin = AdminClient
                 .create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers))) {
-            admin.deleteTopics(Collections.singletonList(kStreamsProcessorConfig.output().topic().get())).all().get(
+            admin.deleteTopics(Collections.singletonList(kStreamsProcessorRuntimeConfig.output().topic().get())).all().get(
                     10L,
                     TimeUnit.SECONDS);
         }
@@ -93,8 +93,8 @@ public class ProcessorHealthCheckQuarkusTest {
         checkLiveness().responseCode(200).isUp(true).isStateUp(true);
         checkReadiness().responseCode(503)
                 .isUp(false)
-                .topicsCheck(false, kStreamsProcessorConfig.input().topic().get() + "," + storeTopic,
-                        kStreamsProcessorConfig.output().topic().get())
+                .topicsCheck(false, kStreamsProcessorRuntimeConfig.input().topic().get() + "," + storeTopic,
+                        kStreamsProcessorRuntimeConfig.output().topic().get())
                 .stateCheck(true, "RUNNING");
 
         streams.close();

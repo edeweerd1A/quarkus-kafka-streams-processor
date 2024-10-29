@@ -41,11 +41,12 @@ import io.quarkiverse.kafkastreamsprocessor.api.decorator.processor.ProcessorDec
 import io.quarkiverse.kafkastreamsprocessor.runtime.TopologyProducer;
 import io.quarkiverse.kafkastreamsprocessor.runtime.errors.DlqMetadataHandler;
 import io.quarkiverse.kafkastreamsprocessor.runtime.errors.ErrorHandlingStrategy;
-import io.quarkiverse.kafkastreamsprocessor.runtime.mapping.SinkToTopicMappingBuilderImpl;
 import io.quarkiverse.kafkastreamsprocessor.runtime.metrics.KafkaStreamsProcessorMetrics;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
+import io.quarkiverse.kafkastreamsprocessor.spi.SinkToTopicMappingBuilder;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 /**
  * Forwards poisonous messages to the dead-letter sink.
@@ -58,7 +59,7 @@ import lombok.RequiredArgsConstructor;
 @Dependent
 public class DlqDecorator extends AbstractProcessorDecorator {
 
-    private final SinkToTopicMappingBuilderImpl SinkToTopicMappingBuilderImpl;
+    private final SinkToTopicMappingBuilder SinkToTopicMappingBuilder;
 
     /**
      * Tool to enrich a message metadata before its storage in the dead letter queue
@@ -70,7 +71,7 @@ public class DlqDecorator extends AbstractProcessorDecorator {
      */
     private final KafkaStreamsProcessorMetrics metrics;
 
-    private final KStreamsProcessorConfig kStreamsProcessorConfig;
+    private final KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     /**
      * A set of sink names that are involved in the business logic.
@@ -94,26 +95,26 @@ public class DlqDecorator extends AbstractProcessorDecorator {
     /**
      * Injection constructor
      *
-     * @param SinkToTopicMappingBuilderImpl
+     * @param SinkToTopicMappingBuilder
      *        utility to get access to the mapping between sinks and Kafka topics
      * @param dlqMetadataHandler
      *        the enricher of metadata before sending message to the dead letter queue
      * @param metrics
      *        container of all metrics of the framework
-     * @param kStreamsProcessorConfig
+     * @param kStreamsProcessorRuntimeConfig
      *        It contains the configuration for the error strategy configuration property value (default
      *        {@link ErrorHandlingStrategy#CONTINUE}) and the configuration Kafka topic to use for dead letter queue
      *        (optional)
      */
     @Inject
     public DlqDecorator(
-            SinkToTopicMappingBuilderImpl SinkToTopicMappingBuilderImpl, DlqMetadataHandler dlqMetadataHandler,
+            SinkToTopicMappingBuilder SinkToTopicMappingBuilder, DlqMetadataHandler dlqMetadataHandler,
             KafkaStreamsProcessorMetrics metrics,
-            KStreamsProcessorConfig kStreamsProcessorConfig) { // NOSONAR Optional with microprofile-config
-        this.SinkToTopicMappingBuilderImpl = SinkToTopicMappingBuilderImpl;
+            KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig) { // NOSONAR Optional with microprofile-config
+        this.SinkToTopicMappingBuilder = SinkToTopicMappingBuilder;
         this.dlqMetadataHandler = dlqMetadataHandler;
         this.metrics = metrics;
-        this.kStreamsProcessorConfig = kStreamsProcessorConfig;
+        this.kStreamsProcessorRuntimeConfig = kStreamsProcessorRuntimeConfig;
     }
 
     /**
@@ -126,9 +127,9 @@ public class DlqDecorator extends AbstractProcessorDecorator {
      */
     @Override
     public void init(final ProcessorContext context) {
-        functionalSinks = SinkToTopicMappingBuilderImpl.sinkToTopicMapping().keySet();
-        activated = ErrorHandlingStrategy.shouldSendToDlq(kStreamsProcessorConfig.errorStrategy(),
-                kStreamsProcessorConfig.dlq().topic());
+        functionalSinks = SinkToTopicMappingBuilder.sinkToTopicMapping().keySet();
+        activated = ErrorHandlingStrategy.shouldSendToDlq(errorStrategy,
+                kStreamsProcessorRuntimeConfig.dlq().topic());
         if (activated) {
             this.context = new DlqProcessorContextDecorator<>((InternalProcessorContext) context, functionalSinks);
             getDelegate().init(this.context);

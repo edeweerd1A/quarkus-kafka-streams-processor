@@ -47,8 +47,8 @@ public class KafkaStreamsProcessorProcessorTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClass(io.quarkiverse.kafkastreamsprocessor.kafka.streams.test.MyProcessor.class))
-            .overrideConfigKey("kafkastreamsprocessor.input.topics", "ping-events")
-            .overrideConfigKey("kafkastreamsprocessor.output.topic", "pong-events")
+            .overrideConfigKey("quarkus.kafkastreamsprocessor.input.topics", "ping-events")
+            .overrideConfigKey("quarkus.kafkastreamsprocessor.output.topic", "pong-events")
             .overrideConfigKey("quarkus.kafka-streams.topics", "ping-events,pong-events")
             .addBuildChainCustomizer(buildCustomizer());
 

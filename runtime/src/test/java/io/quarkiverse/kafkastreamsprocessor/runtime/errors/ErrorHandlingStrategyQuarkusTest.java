@@ -50,7 +50,7 @@ import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufDeserializer;
 import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufSerializer;
 
 import io.quarkiverse.kafkastreamsprocessor.api.Processor;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkiverse.kafkastreamsprocessor.sample.message.PingMessage;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
@@ -61,7 +61,7 @@ import io.quarkus.test.junit.TestProfile;
 public class ErrorHandlingStrategyQuarkusTest {
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     @ConfigProperty(name = "kafka.bootstrap.servers")
     String kafkaBootstrapServers;
@@ -77,7 +77,7 @@ public class ErrorHandlingStrategyQuarkusTest {
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(kafkaBootstrapServers, "test", "true");
         consumer = new KafkaConsumer<>(consumerProps, new StringDeserializer(),
                 new KafkaProtobufDeserializer<>(PingMessage.Ping.parser()));
-        consumer.subscribe(List.of(kStreamsProcessorConfig.output().topic().get()));
+        consumer.subscribe(List.of(kStreamsProcessorRuntimeConfig.output().topic().get()));
     }
 
     @AfterEach
@@ -90,11 +90,11 @@ public class ErrorHandlingStrategyQuarkusTest {
     void continueErrorStrategyShouldBeTheDefaultWhenProcessingFail() {
         PingMessage.Ping pingA = PingMessage.Ping.newBuilder().setMessage("a").build();
         PingMessage.Ping pingAB = PingMessage.Ping.newBuilder().setMessage("ab").build();
-        producer.send(new ProducerRecord<>(kStreamsProcessorConfig.input().topic().get(), pingA));
-        producer.send(new ProducerRecord<>(kStreamsProcessorConfig.input().topic().get(), pingAB));
+        producer.send(new ProducerRecord<>(kStreamsProcessorRuntimeConfig.input().topic().get(), pingA));
+        producer.send(new ProducerRecord<>(kStreamsProcessorRuntimeConfig.input().topic().get(), pingAB));
         producer.flush();
         ConsumerRecord<String, PingMessage.Ping> record = KafkaTestUtils.getSingleRecord(consumer,
-                kStreamsProcessorConfig.output().topic().get(),
+                kStreamsProcessorRuntimeConfig.output().topic().get(),
                 Duration.ofSeconds(5));
         MatcherAssert.assertThat(record.value().getMessage(), is(equalTo("ab")));
     }

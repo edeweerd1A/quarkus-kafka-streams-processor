@@ -36,14 +36,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 public class PojoProcessorTopologyTest {
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     TopologyTestDriver testDriver;
 
@@ -61,10 +61,10 @@ public class PojoProcessorTopologyTest {
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dummy:1234");
         testDriver = new TopologyTestDriver(topology, config);
 
-        testInputTopic = testDriver.createInputTopic(kStreamsProcessorConfig.input().topic().get(),
+        testInputTopic = testDriver.createInputTopic(kStreamsProcessorRuntimeConfig.input().topic().get(),
                 new StringSerializer(),
                 new StringSerializer());
-        testOutputTopic = testDriver.createOutputTopic(kStreamsProcessorConfig.output().topic().get(),
+        testOutputTopic = testDriver.createOutputTopic(kStreamsProcessorRuntimeConfig.output().topic().get(),
                 new StringDeserializer(),
                 new StringDeserializer());
     }

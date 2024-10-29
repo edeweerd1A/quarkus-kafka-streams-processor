@@ -44,7 +44,7 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -54,7 +54,7 @@ public class PojoProcessorQuarkusTest {
     String kafkaBootstrapServers;
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     KafkaProducer<String, String> producer;
 
@@ -68,7 +68,7 @@ public class PojoProcessorQuarkusTest {
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(kafkaBootstrapServers, "test", "true");
         consumer = new KafkaConsumer<>(consumerProps, new StringDeserializer(),
                 new StringDeserializer());
-        consumer.subscribe(List.of(kStreamsProcessorConfig.output().topic().get()));
+        consumer.subscribe(List.of(kStreamsProcessorRuntimeConfig.output().topic().get()));
         Map<String, Object> producerProps = KafkaTestUtils.producerProps(kafkaBootstrapServers);
         producer = new KafkaProducer<>(producerProps, new StringSerializer(), new StringSerializer());
     }
@@ -84,11 +84,11 @@ public class PojoProcessorQuarkusTest {
         SamplePojo pojo = new SamplePojo("hello", 1234, true);
         String json = objectMapper.writeValueAsString(pojo);
 
-        producer.send(new ProducerRecord<>(kStreamsProcessorConfig.input().topic().get(), json));
+        producer.send(new ProducerRecord<>(kStreamsProcessorRuntimeConfig.input().topic().get(), json));
         producer.flush();
 
         ConsumerRecord<String, String> record = KafkaTestUtils.getSingleRecord(consumer,
-                kStreamsProcessorConfig.output().topic().get(), Durations.FIVE_SECONDS);
+                kStreamsProcessorRuntimeConfig.output().topic().get(), Durations.FIVE_SECONDS);
         SamplePojo expected = new SamplePojo("olleh", 1271, false);
 
         assertThat(objectMapper.readValue(record.value(), SamplePojo.class), is(equalTo(expected)));

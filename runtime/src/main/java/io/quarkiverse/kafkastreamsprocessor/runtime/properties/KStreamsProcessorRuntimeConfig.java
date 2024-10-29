@@ -26,8 +26,8 @@ import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 
 @ConfigRoot(phase = ConfigPhase.RUN_TIME)
-@ConfigMapping(prefix = "kafkastreamsprocessor")
-public interface KStreamsProcessorConfig {
+@ConfigMapping(prefix = "quarkus.kafkastreamsprocessor")
+public interface KStreamsProcessorRuntimeConfig {
     /**
      * The Kafka topics for incoming messages
      */
@@ -47,12 +47,6 @@ public interface KStreamsProcessorConfig {
      * Global Dead letter Queue config
      */
     GlobalDlqConfig globalDlq();
-
-    /**
-     * Kafka error handling strategy
-     */
-    @WithDefault("continue")
-    String errorStrategy();
 
     /**
      * All configuration related to the RetryDecorator and reprocessing a record when a retryable exception has been

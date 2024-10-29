@@ -19,8 +19,11 @@
  */
 package io.quarkiverse.kafkastreamsprocessor.api.serdes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.apache.kafka.common.errors.SerializationException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,17 +50,17 @@ class JacksonDeserializerTest {
     void shouldDeserializeAPojo() throws JsonProcessingException {
         Pojo pojo = new Pojo("value");
         Pojo deserialized = deserializer.deserialize("topic", mapper.writeValueAsBytes(pojo));
-        Assertions.assertEquals(pojo, deserialized);
+        assertEquals(pojo, deserialized);
     }
 
     @Test
     void shouldReturnNullWhenNoPojoIsProvided() {
-        Assertions.assertNull(deserializer.deserialize("topic", null));
+        assertNull(deserializer.deserialize("topic", null));
     }
 
     @Test
     void shouldRaiseSerializationExceptionWhenJsonBytesAreNotValid() {
-        Assertions.assertThrows(SerializationException.class,
+        assertThrows(SerializationException.class,
                 () -> deserializer.deserialize("topic", "NoJSONBytes".getBytes()));
     }
 

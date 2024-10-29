@@ -54,7 +54,7 @@ import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufSerializer;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.quarkiverse.kafkastreamsprocessor.api.Processor;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkiverse.kafkastreamsprocessor.sample.message.PingMessage;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
@@ -67,7 +67,7 @@ class LogAndSendToDlqExceptionHandlerDelegateQuarkusTest {
     private static final String DLQ_TOPIC = "dlq-topic";
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     @Inject
     MeterRegistry registry;
@@ -112,12 +112,12 @@ class LogAndSendToDlqExceptionHandlerDelegateQuarkusTest {
 
     @Test
     void deserializationErrorShouldGoInDlqTopic() throws Exception {
-        consumer.subscribe(List.of(kStreamsProcessorConfig.output().topic().get()));
+        consumer.subscribe(List.of(kStreamsProcessorRuntimeConfig.output().topic().get()));
         dlqConsumer.subscribe(List.of(DLQ_TOPIC));
 
         PingMessage.Ping ping = PingMessage.Ping.newBuilder().setMessage("WillBeCorruptedBySerializer").build();
         producer.send(
-                new ProducerRecord<String, PingMessage.Ping>(kStreamsProcessorConfig.input().topic().get(), 0,
+                new ProducerRecord<String, PingMessage.Ping>(kStreamsProcessorRuntimeConfig.input().topic().get(), 0,
                         null,
                         ping));
         producer.flush();
@@ -150,8 +150,8 @@ class LogAndSendToDlqExceptionHandlerDelegateQuarkusTest {
 
         @Override
         public Map<String, String> getConfigOverrides() {
-            return Map.of("kafkastreamsprocessor.error-strategy", "dead-letter-queue",
-                    "kafkastreamsprocessor.dlq.topic", DLQ_TOPIC);
+            return Map.of("quarkus.kafkastreamsprocessor.error-strategy", "dead-letter-queue",
+                    "quarkus.kafkastreamsprocessor.dlq.topic", DLQ_TOPIC);
         }
     }
 

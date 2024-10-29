@@ -47,12 +47,12 @@ public class KafkaStreamsProcessorProcessorWithRetryTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClass(io.quarkiverse.kafkastreamsprocessor.kafka.streams.test.MyProcessor.class))
-            .overrideConfigKey("kafkastreamsprocessor.input.topics", "ping-events")
-            .overrideConfigKey("kafkastreamsprocessor.output.topic", "pong-events")
+            .overrideConfigKey("quarkus.kafkastreamsprocessor.input.topics", "ping-events")
+            .overrideConfigKey("quarkus.kafkastreamsprocessor.output.topic", "pong-events")
             .overrideConfigKey("quarkus.kafka-streams.topics", "ping-events,pong-events")
-            .overrideConfigKey("kafkastreamsprocessor.retry.retry-on",
+            .overrideConfigKey("quarkus.kafkastreamsprocessor.retry.retry-on",
                     "io.quarkiverse.kafkastreamsprocessor.kafka.streams.test.KafkaStreamsProcessorProcessorWithRetryTest$RetryException")
-            .overrideConfigKey("kafkastreamsprocessor.retry.abort-on",
+            .overrideConfigKey("quarkus.kafkastreamsprocessor.retry.abort-on",
                     "io.quarkiverse.kafkastreamsprocessor.kafka.streams.test.KafkaStreamsProcessorProcessorWithRetryTest$AbortException")
             .addBuildChainCustomizer(buildCustomizer());
 

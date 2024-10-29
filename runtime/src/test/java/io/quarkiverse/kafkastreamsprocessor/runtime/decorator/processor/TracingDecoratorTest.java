@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.any;
@@ -58,7 +59,6 @@ import org.apache.kafka.streams.processor.internals.InternalProcessorContext;
 import org.hamcrest.MatcherAssert;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.formatters.PatternFormatter;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -276,7 +276,7 @@ public class TracingDecoratorTest {
     @Test
     void shouldLetBubbleUpKafkaExceptionAndLogMessage() {
         doThrow(new KafkaException()).when(kafkaProcessor).process(any());
-        Assertions.assertThrows(KafkaException.class,
+        assertThrows(KafkaException.class,
                 () -> decorator.process(new Record<>("key", inputMessage, 0L)));
     }
 

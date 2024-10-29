@@ -1,4 +1,4 @@
-package io.quarkiverse.kafkastreamsprocessor.runtime.mapping;
+package io.quarkiverse.kafkastreamsprocessor.spi;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
@@ -22,8 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@Deprecated
-public class SourceToTopicsMappingBuilderImplFromConfigTest {
+public class SourceToTopicsMappingBuilderTest {
 
     @Mock
     Config config;
@@ -41,10 +40,9 @@ public class SourceToTopicsMappingBuilderImplFromConfigTest {
     @Test
     void sourceToTopicMapping_whenSingleSource_shouldGenerateMapping() {
         mockProperties(Map.of("something.else", "value",
-                "kafkastreamsprocessor.input.sources.ping.topics", "ping-topic,other-ping"));
+                "quarkus.kafkastreamsprocessor.input.sources.ping.topics", "ping-topic,other-ping"));
 
-        Map<String, String[]> sourceToTopicMapping = new SourceToTopicsMappingBuilderImpl(
-                KStreamsProcessorConfigGenerator.buildConfig(config)).sourceToTopicsMapping();
+        Map<String, String[]> sourceToTopicMapping = new SourceToTopicsMappingBuilder(config).sourceToTopicsMapping();
 
         Map<String, String[]> expected = Map.of("ping", new String[] { "ping-topic", "other-ping" });
         assertEquals(expected.size(), sourceToTopicMapping.size());
@@ -54,12 +52,11 @@ public class SourceToTopicsMappingBuilderImplFromConfigTest {
 
     @Test
     void sourceToTopicMapping_whenMultipleSources_shouldGenerateMapping() {
-        mockProperties(Map.of("kafkastreamsprocessor.input.sources.pong.topics", "pong-topic",
-                "kafkastreamsprocessor.input.sources.ping.topics", "ping-topic",
-                "kafkastreamsprocessor.input.sources.pang.topics", "pang-topic"));
+        mockProperties(Map.of("quarkus.kafkastreamsprocessor.input.sources.pong.topics", "pong-topic",
+                "quarkus.kafkastreamsprocessor.input.sources.ping.topics", "ping-topic",
+                "quarkus.kafkastreamsprocessor.input.sources.pang.topics", "pang-topic"));
 
-        Map<String, String[]> sourceToTopicMapping = new SourceToTopicsMappingBuilderImpl(
-                KStreamsProcessorConfigGenerator.buildConfig(config)).sourceToTopicsMapping();
+        Map<String, String[]> sourceToTopicMapping = new SourceToTopicsMappingBuilder(config).sourceToTopicsMapping();
 
         Map<String, String[]> expected = Map.of("ping", new String[] { "ping-topic" }, "pong",
                 new String[] { "pong-topic" }, "pang", new String[] { "pang-topic" });
@@ -70,10 +67,9 @@ public class SourceToTopicsMappingBuilderImplFromConfigTest {
 
     @Test
     void sourceToTopicMapping_whenSourceWitDash_shouldGenerateMapping() {
-        mockProperties(Map.of("kafkastreamsprocessor.input.sources.my-channel.topics", "my-topic"));
+        mockProperties(Map.of("quarkus.kafkastreamsprocessor.input.sources.my-channel.topics", "my-topic"));
 
-        Map<String, String[]> sourceToTopicMapping = new SourceToTopicsMappingBuilderImpl(
-                KStreamsProcessorConfigGenerator.buildConfig(config)).sourceToTopicsMapping();
+        Map<String, String[]> sourceToTopicMapping = new SourceToTopicsMappingBuilder(config).sourceToTopicsMapping();
 
         Map<String, String[]> expected = Map.of("my-channel", new String[] { "my-topic" });
         assertEquals(expected.size(), sourceToTopicMapping.size());
@@ -84,12 +80,12 @@ public class SourceToTopicsMappingBuilderImplFromConfigTest {
 
     @Test
     void sourceToTopicMapping_whenNoSourceButInputTopic_shouldGenerateMapping() {
-        mockProperties(Map.of("kafkastreamsprocessor.input.topic", "ping-topic",
+        mockProperties(Map.of("quarkus.kafkastreamsprocessor.input.topic", "ping-topic",
                 "something.else", "value",
-                "kafkastreamsprocessor.input.sources.incorrect", "missing-dot-topic",
-                "kafkastreamsprocessor.input.sources.incorrect.notopic", "invalid-suffix"));
+                "quarkus.kafkastreamsprocessor.input.sources.incorrect", "missing-dot-topic",
+                "quarkus.kafkastreamsprocessor.input.sources.incorrect.notopic", "invalid-suffix"));
 
-        Map<String, String[]> map = new SourceToTopicsMappingBuilderImpl(KStreamsProcessorConfigGenerator.buildConfig(config))
+        Map<String, String[]> map = new SourceToTopicsMappingBuilder(config)
                 .sourceToTopicsMapping();
 
         assertThat(map, allOf(aMapWithSize(1), hasEntry("receiver-channel", new String[] { "ping-topic" })));
@@ -97,20 +93,20 @@ public class SourceToTopicsMappingBuilderImplFromConfigTest {
 
     @Test
     void sourceWithDot() {
-        mockProperties(Map.of("kafkastreamsprocessor.input.sources..incorrect.topics", "too-many-dots"));
+        mockProperties(Map.of("quarkus.kafkastreamsprocessor.input.sources..incorrect.topics", "too-many-dots"));
 
         assertThrows(IllegalStateException.class,
-                () -> new SourceToTopicsMappingBuilderImpl(KStreamsProcessorConfigGenerator.buildConfig(config))
+                () -> new SourceToTopicsMappingBuilder(config)
                         .sourceToTopicsMapping());
     }
 
     @Test
     void sourceToTopicMapping_whenNoSourceAndNoInputTopic_shouldGenerateEmptyMapping() {
         mockProperties(Map.of("something.else", "value",
-                "kafkastreamsprocessor.input.sources.incorrect", "missing-dot-topic",
-                "kafkastreamsprocessor.input.sources.incorrect.notopic", "invalid-suffix"));
+                "quarkus.kafkastreamsprocessor.input.sources.incorrect", "missing-dot-topic",
+                "quarkus.kafkastreamsprocessor.input.sources.incorrect.notopic", "invalid-suffix"));
 
-        Map<String, String[]> map = new SourceToTopicsMappingBuilderImpl(KStreamsProcessorConfigGenerator.buildConfig(config))
+        Map<String, String[]> map = new SourceToTopicsMappingBuilder(config)
                 .sourceToTopicsMapping();
 
         assertThat(map, anEmptyMap());

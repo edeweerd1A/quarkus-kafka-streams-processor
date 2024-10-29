@@ -62,12 +62,12 @@ public class KafkaStreamsProcessorProcessor {
     public void registerRetryExceptions(BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
         Config config = ConfigProvider.getConfig();
 
-        config.getOptionalValue("kafkastreamsprocessor.retry.retry-on", String[].class)
+        config.getOptionalValue("quarkus.kafkastreamsprocessor.retry.retry-on", String[].class)
                 .ifPresent(retryExceptions -> reflectiveClass.produce(ReflectiveClassBuildItem.builder(retryExceptions)
                         .methods(false)
                         .fields(false)
                         .build()));
-        config.getOptionalValue("kafkastreamsprocessor.retry.abort-on", String[].class)
+        config.getOptionalValue("quarkus.kafkastreamsprocessor.retry.abort-on", String[].class)
                 .ifPresent(abortExceptions -> reflectiveClass.produce(ReflectiveClassBuildItem.builder(abortExceptions)
                         .methods(false)
                         .fields(false)

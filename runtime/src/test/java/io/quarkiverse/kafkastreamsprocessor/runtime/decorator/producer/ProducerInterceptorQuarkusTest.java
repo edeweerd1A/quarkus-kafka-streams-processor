@@ -51,7 +51,7 @@ import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufSerializer;
 
 import io.quarkiverse.kafkastreamsprocessor.api.Processor;
 import io.quarkiverse.kafkastreamsprocessor.api.decorator.producer.ProducerOnSendInterceptor;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkiverse.kafkastreamsprocessor.sample.message.PingMessage;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
@@ -68,7 +68,7 @@ public class ProducerInterceptorQuarkusTest {
     KafkaConsumer<String, PingMessage.Ping> consumer;
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     @BeforeEach
     public void setup() {
@@ -81,9 +81,9 @@ public class ProducerInterceptorQuarkusTest {
 
     @Test
     public void producerInterceptorCalled() throws Exception {
-        consumer.subscribe(List.of(kStreamsProcessorConfig.output().topic().get()));
+        consumer.subscribe(List.of(kStreamsProcessorRuntimeConfig.output().topic().get()));
 
-        producer.send(new ProducerRecord<>(kStreamsProcessorConfig.input().topic().get(), 0, "key",
+        producer.send(new ProducerRecord<>(kStreamsProcessorRuntimeConfig.input().topic().get(), 0, "key",
                 PingMessage.Ping.newBuilder().setMessage("value").build()));
         producer.flush();
 

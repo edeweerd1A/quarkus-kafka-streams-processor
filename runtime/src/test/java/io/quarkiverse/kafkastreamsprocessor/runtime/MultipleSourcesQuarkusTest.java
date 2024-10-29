@@ -117,9 +117,9 @@ public class MultipleSourcesQuarkusTest {
         @Override
         public Map<String, String> getConfigOverrides() {
             return Map.of(
-                    "kafkastreamsprocessor.input.sources.ping.topics", "ping-topic,other-ping",
-                    "kafkastreamsprocessor.input.sources.pang.topics", "pang-topic",
-                    "kafkastreamsprocessor.output.sinks.pong.topic", "pong-topic",
+                    "quarkus.kafkastreamsprocessor.input.sources.ping.topics", "ping-topic,other-ping",
+                    "quarkus.kafkastreamsprocessor.input.sources.pang.topics", "pang-topic",
+                    "quarkus.kafkastreamsprocessor.output.sinks.pong.topic", "pong-topic",
                     "quarkus.kafka-streams.topics", "ping-topic,other-ping,pang-topic,pong-topic");
         }
 

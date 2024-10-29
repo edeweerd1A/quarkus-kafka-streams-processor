@@ -53,7 +53,7 @@ import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufSerializer;
 import de.svenjacobs.loremipsum.LoremIpsum;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.quarkiverse.kafkastreamsprocessor.api.Processor;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkiverse.kafkastreamsprocessor.sample.message.PingMessage;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
@@ -66,7 +66,7 @@ public class GlobalDLQProductionExceptionHandlerQuarkusTest {
     private static final String GLOBALDLQ_TOPIC = "dlq-topic";
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     String inputTopic;
 
@@ -97,7 +97,7 @@ public class GlobalDLQProductionExceptionHandlerQuarkusTest {
 
         registry.clear();
 
-        inputTopic = kStreamsProcessorConfig.input().topic().get();
+        inputTopic = kStreamsProcessorRuntimeConfig.input().topic().get();
     }
 
     @AfterEach
@@ -109,7 +109,7 @@ public class GlobalDLQProductionExceptionHandlerQuarkusTest {
 
     @Test
     public void bigMessageShouldGoInDlqTopic() throws Exception {
-        consumer.subscribe(List.of(kStreamsProcessorConfig.output().topic().get()));
+        consumer.subscribe(List.of(kStreamsProcessorRuntimeConfig.output().topic().get()));
         dlqConsumer.subscribe(List.of(GLOBALDLQ_TOPIC));
 
         String bigMessage = new LoremIpsum().getWords(100);
@@ -149,10 +149,10 @@ public class GlobalDLQProductionExceptionHandlerQuarkusTest {
 
         @Override
         public Map<String, String> getConfigOverrides() {
-            return Map.of("kafkastreamsprocessor.global-dlq.topic", GLOBALDLQ_TOPIC,
-                    "kafkastreamsprocessor.global-dlq.max-message-size", Integer.toString(Integer.MAX_VALUE),
-                    "kafka-streams.max.request.size", "300", "kafkastreamsprocessor.error-strategy",
-                    "dead-letter-queue", "kafkastreamsprocessor.dlq.topic",
+            return Map.of("quarkus.kafkastreamsprocessor.global-dlq.topic", GLOBALDLQ_TOPIC,
+                    "quarkus.kafkastreamsprocessor.global-dlq.max-message-size", Integer.toString(Integer.MAX_VALUE),
+                    "kafka-streams.max.request.size", "300", "quarkus.kafkastreamsprocessor.error-strategy",
+                    "dead-letter-queue", "quarkus.kafkastreamsprocessor.dlq.topic",
                     GLOBALDLQ_TOPIC);
         }
 

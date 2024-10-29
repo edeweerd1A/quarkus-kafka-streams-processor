@@ -46,7 +46,7 @@ import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufDeserializer;
 import com.github.daniel.shuy.kafka.protobuf.serde.KafkaProtobufSerializer;
 
 import io.quarkiverse.kafkastreamsprocessor.api.Processor;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkiverse.kafkastreamsprocessor.sample.message.PingMessage;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
@@ -63,7 +63,7 @@ public class KStreamTopologyWithDlqDriverTest {
     TopologyTestDriver testDriver;
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     TestInputTopic<String, PingMessage.Ping> testInputTopic;
 
@@ -77,13 +77,14 @@ public class KStreamTopologyWithDlqDriverTest {
         config.put(StreamsConfig.APPLICATION_ID_CONFIG, "test");
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dummy:1234");
         testDriver = new TopologyTestDriver(topology, config);
-        testInputTopic = testDriver.createInputTopic(kStreamsProcessorConfig.input().topic().get(), new StringSerializer(),
+        testInputTopic = testDriver.createInputTopic(kStreamsProcessorRuntimeConfig.input().topic().get(),
+                new StringSerializer(),
                 new KafkaProtobufSerializer<PingMessage.Ping>());
-        testOutputTopic = testDriver.createOutputTopic(kStreamsProcessorConfig.output().topic().get(),
+        testOutputTopic = testDriver.createOutputTopic(kStreamsProcessorRuntimeConfig.output().topic().get(),
                 new StringDeserializer(),
                 new KafkaProtobufDeserializer<>(PingMessage.Ping.parser()));
-        if (kStreamsProcessorConfig.dlq().topic().isPresent()) {
-            testDlqOutputTopic = testDriver.createOutputTopic(kStreamsProcessorConfig.dlq().topic().get(),
+        if (kStreamsProcessorRuntimeConfig.dlq().topic().isPresent()) {
+            testDlqOutputTopic = testDriver.createOutputTopic(kStreamsProcessorRuntimeConfig.dlq().topic().get(),
                     new StringDeserializer(),
                     new KafkaProtobufDeserializer<>(PingMessage.Ping.parser()));
         }
@@ -129,8 +130,8 @@ public class KStreamTopologyWithDlqDriverTest {
 
         @Override
         public Map<String, String> getConfigOverrides() {
-            return Map.of("kafkastreamsprocessor.error-strategy", "dead-letter-queue",
-                    "kafkastreamsprocessor.dlq.topic", "dlq");
+            return Map.of("quarkus.kafkastreamsprocessor.error-strategy", "dead-letter-queue",
+                    "quarkus.kafkastreamsprocessor.dlq.topic", "dlq");
         }
     }
 }

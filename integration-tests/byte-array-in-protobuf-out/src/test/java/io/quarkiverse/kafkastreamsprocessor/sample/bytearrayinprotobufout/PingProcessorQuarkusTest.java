@@ -118,8 +118,8 @@ public class PingProcessorQuarkusTest {
         @Override
         public Map<String, String> getConfigOverrides() {
             return Map.of(
-                    "kafkastreamsprocessor.error-strategy", "dead-letter-queue",
-                    "kafkastreamsprocessor.dlq.topic", "dead-letter-queue",
+                    "quarkus.kafkastreamsprocessor.error-strategy", "dead-letter-queue",
+                    "quarkus.kafkastreamsprocessor.dlq.topic", "dead-letter-queue",
                     "quarkus.kafka-streams.topics", "ping-events,pong-events,dead-letter-queue");
         }
     }

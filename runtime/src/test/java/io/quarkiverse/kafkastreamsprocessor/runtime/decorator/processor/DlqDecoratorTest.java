@@ -50,11 +50,11 @@ import io.quarkiverse.kafkastreamsprocessor.runtime.TestException;
 import io.quarkiverse.kafkastreamsprocessor.runtime.TopologyProducer;
 import io.quarkiverse.kafkastreamsprocessor.runtime.decorator.processor.DlqDecorator.DlqProcessorContextDecorator;
 import io.quarkiverse.kafkastreamsprocessor.runtime.errors.DlqMetadataHandler;
-import io.quarkiverse.kafkastreamsprocessor.runtime.mapping.SinkToTopicMappingBuilderImpl;
 import io.quarkiverse.kafkastreamsprocessor.runtime.metrics.KafkaStreamsProcessorMetrics;
 import io.quarkiverse.kafkastreamsprocessor.runtime.metrics.MockKafkaStreamsProcessorMetrics;
 import io.quarkiverse.kafkastreamsprocessor.runtime.properties.DlqConfig;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
+import io.quarkiverse.kafkastreamsprocessor.spi.SinkToTopicMappingBuilder;
 
 @ExtendWith(MockitoExtension.class)
 public class DlqDecoratorTest {
@@ -84,10 +84,10 @@ public class DlqDecoratorTest {
     DlqMetadataHandler dlqMetadataHandler;
 
     @Mock
-    KStreamsProcessorConfig config;
+    KStreamsProcessorRuntimeConfig config;
 
     @Mock
-    SinkToTopicMappingBuilderImpl sinkToTopicMappingBuilder;
+    SinkToTopicMappingBuilder sinkToTopicMappingBuilder;
 
     @Mock
     DlqConfig dlqConfig;

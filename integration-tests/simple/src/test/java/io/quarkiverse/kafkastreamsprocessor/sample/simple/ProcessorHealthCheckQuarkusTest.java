@@ -38,7 +38,7 @@ import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
@@ -51,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProcessorHealthCheckQuarkusTest {
 
     @Inject
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     @Inject
     KafkaStreams streams;
@@ -68,14 +68,14 @@ public class ProcessorHealthCheckQuarkusTest {
         checkReadiness().responseCode(200)
                 .isUp(true)
                 .topicsCheck(true,
-                        kStreamsProcessorConfig.input().topic().get() + ","
-                                + kStreamsProcessorConfig.output().topic().get(),
+                        kStreamsProcessorRuntimeConfig.input().topic().get() + ","
+                                + kStreamsProcessorRuntimeConfig.output().topic().get(),
                         null)
                 .stateCheck(true, "RUNNING");
 
         try (AdminClient admin = AdminClient
                 .create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers))) {
-            admin.deleteTopics(Collections.singletonList(kStreamsProcessorConfig.output().topic().get())).all().get(
+            admin.deleteTopics(Collections.singletonList(kStreamsProcessorRuntimeConfig.output().topic().get())).all().get(
                     10L,
                     TimeUnit.SECONDS);
         }
@@ -83,8 +83,8 @@ public class ProcessorHealthCheckQuarkusTest {
         checkLiveness().responseCode(200).isUp(true).isStateUp(true);
         checkReadiness().responseCode(503)
                 .isUp(false)
-                .topicsCheck(false, kStreamsProcessorConfig.input().topic().get(),
-                        kStreamsProcessorConfig.output().topic().get())
+                .topicsCheck(false, kStreamsProcessorRuntimeConfig.input().topic().get(),
+                        kStreamsProcessorRuntimeConfig.output().topic().get())
                 .stateCheck(true, "RUNNING");
 
         streams.close();

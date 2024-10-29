@@ -40,9 +40,9 @@ import io.quarkiverse.kafkastreamsprocessor.runtime.configuration.DefaultConfigu
 import io.quarkiverse.kafkastreamsprocessor.runtime.configuration.DefaultTopologySerdesConfiguration;
 import io.quarkiverse.kafkastreamsprocessor.runtime.configuration.TopologyConfigurationImpl;
 import io.quarkiverse.kafkastreamsprocessor.runtime.configuration.TypeUtils;
-import io.quarkiverse.kafkastreamsprocessor.runtime.mapping.SinkToTopicMappingBuilderImpl;
-import io.quarkiverse.kafkastreamsprocessor.runtime.mapping.SourceToTopicsMappingBuilderImpl;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
+import io.quarkiverse.kafkastreamsprocessor.spi.SinkToTopicMappingBuilder;
+import io.quarkiverse.kafkastreamsprocessor.spi.SourceToTopicsMappingBuilder;
 
 /**
  * Processor must be annotated with {@link io.quarkiverse.kafkastreamsprocessor.api.Processor}
@@ -62,7 +62,7 @@ public class TopologyProducer {
     /**
      * Class containing the configuration related to kafka streams processor
      */
-    private final KStreamsProcessorConfig kStreamsProcessorConfig;
+    private final KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     /**
      * The configuration customizer if any defined by the microservice.
@@ -75,12 +75,12 @@ public class TopologyProducer {
     /**
      * The source configuration bean which produces the mapping between source and their respective topics
      */
-    private final SourceToTopicsMappingBuilderImpl sourceToTopicsMappingBuilderImpl;
+    private final SourceToTopicsMappingBuilder SourceToTopicsMappingBuilder;
 
     /**
      * The sink configuration bean which resolves the mapping between sink and their respective Kafka topic
      */
-    private final SinkToTopicMappingBuilderImpl SinkToTopicMappingBuilderImpl;
+    private final SinkToTopicMappingBuilder SinkToTopicMappingBuilder;
 
     /**
      * Producer interceptor list that allow to intercept the production of messages to Kafka
@@ -90,26 +90,26 @@ public class TopologyProducer {
     /**
      * Injection constructor
      *
-     * @param kStreamsProcessorConfig
+     * @param kStreamsProcessorRuntimeConfig
      *        Class containing the configuration related to kafka streams processor
      * @param configCustomizer
      *        The configuration customizer if any defined by the microservice.
-     * @param sourceToTopicsMappingBuilderImpl
+     * @param SourceToTopicsMappingBuilder
      *        The source configuration bean which produces the mapping between source and their respective topics
-     * @param SinkToTopicMappingBuilderImpl
+     * @param SinkToTopicMappingBuilder
      *        The sink configuration bean which resolves the mapping between sink and their respective Kafka topic
      * @param interceptors
      *        Producer interceptor list that allow to intercept the production of messages to Kafka
      */
     @Inject
-    public TopologyProducer(KStreamsProcessorConfig kStreamsProcessorConfig,
+    public TopologyProducer(KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig,
             Instance<ConfigurationCustomizer> configCustomizer,
-            SourceToTopicsMappingBuilderImpl sourceToTopicsMappingBuilderImpl,
-            SinkToTopicMappingBuilderImpl SinkToTopicMappingBuilderImpl, Instance<ProducerOnSendInterceptor> interceptors) {
-        this.kStreamsProcessorConfig = kStreamsProcessorConfig;
+            SourceToTopicsMappingBuilder SourceToTopicsMappingBuilder,
+            SinkToTopicMappingBuilder SinkToTopicMappingBuilder, Instance<ProducerOnSendInterceptor> interceptors) {
+        this.kStreamsProcessorRuntimeConfig = kStreamsProcessorRuntimeConfig;
         this.configCustomizers = configCustomizer;
-        this.sourceToTopicsMappingBuilderImpl = sourceToTopicsMappingBuilderImpl;
-        this.SinkToTopicMappingBuilderImpl = SinkToTopicMappingBuilderImpl;
+        this.SourceToTopicsMappingBuilder = SourceToTopicsMappingBuilder;
+        this.SinkToTopicMappingBuilder = SinkToTopicMappingBuilder;
         this.interceptors = interceptors;
     }
 
@@ -167,8 +167,8 @@ public class TopologyProducer {
     public Topology topology(TopologyConfigurationImpl configuration,
             KStreamProcessorSupplier<?, ?, ?, ?> kStreamProcessorSupplier) {
 
-        Map<String, String[]> sourceToTopicMapping = sourceToTopicsMappingBuilderImpl.sourceToTopicsMapping();
-        Map<String, String> sinkToTopicMapping = SinkToTopicMappingBuilderImpl.sinkToTopicMapping();
+        Map<String, String[]> sourceToTopicMapping = SourceToTopicsMappingBuilder.sourceToTopicsMapping();
+        Map<String, String> sinkToTopicMapping = SinkToTopicMappingBuilder.sinkToTopicMapping();
 
         // Now we can build the Topology !
         Topology topology = new Topology();
@@ -179,8 +179,8 @@ public class TopologyProducer {
                 sourceToTopicMapping.keySet().toArray(new String[] {}));
         sinkToTopicMapping.forEach((String sink, String topic) -> topology.addSink(sink, topic, new StringSerializer(),
                 configuration.getSinkValueSerializer(), PROCESSOR_NAME));
-        if (kStreamsProcessorConfig.dlq().topic().isPresent()) {
-            topology.addSink(DLQ_SINK_NAME, kStreamsProcessorConfig.dlq().topic().get(), new StringSerializer(),
+        if (kStreamsProcessorRuntimeConfig.dlq().topic().isPresent()) {
+            topology.addSink(DLQ_SINK_NAME, kStreamsProcessorRuntimeConfig.dlq().topic().get(), new StringSerializer(),
                     configuration.getSourceValueSerde().serializer(), PROCESSOR_NAME);
         }
 

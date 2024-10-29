@@ -48,7 +48,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import io.quarkiverse.kafkastreamsprocessor.runtime.TestException;
 import io.quarkiverse.kafkastreamsprocessor.runtime.metrics.MockKafkaStreamsProcessorMetrics;
 import io.quarkiverse.kafkastreamsprocessor.runtime.properties.GlobalDlqConfig;
-import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorConfig;
+import io.quarkiverse.kafkastreamsprocessor.runtime.properties.KStreamsProcessorRuntimeConfig;
 
 @ExtendWith(MockitoExtension.class)
 class GlobalDLQProductionExceptionHandlerDelegateTest {
@@ -63,7 +63,7 @@ class GlobalDLQProductionExceptionHandlerDelegateTest {
     MockKafkaStreamsProcessorMetrics metrics = new MockKafkaStreamsProcessorMetrics();
 
     @Mock
-    KStreamsProcessorConfig kStreamsProcessorConfig;
+    KStreamsProcessorRuntimeConfig kStreamsProcessorRuntimeConfig;
 
     @Mock
     GlobalDlqConfig globalDlqConfig;
@@ -83,11 +83,11 @@ class GlobalDLQProductionExceptionHandlerDelegateTest {
   @BeforeEach
     public void setup() {
         when(kafkaClientSupplier.getProducer(any())).thenReturn(producer);
-        when(kStreamsProcessorConfig.globalDlq()).thenReturn(globalDlqConfig);
+        when(kStreamsProcessorRuntimeConfig.globalDlq()).thenReturn(globalDlqConfig);
         when(globalDlqConfig.topic()).thenReturn(Optional.of(GLOBAL_DLQ_NAME));
         when(globalDlqConfig.maxMessageSize()).thenReturn(MAX_SIZE_DLQ);
         globalDLQExceptionHandlerDelegate = new GlobalDLQProductionExceptionHandlerDelegate(kafkaClientSupplier,
-                dlqMetadataHandler, metrics, kStreamsProcessorConfig);
+                dlqMetadataHandler, metrics, kStreamsProcessorRuntimeConfig);
         globalDLQExceptionHandlerDelegate.configure(Collections.emptyMap());
     }
 
@@ -117,7 +117,7 @@ class GlobalDLQProductionExceptionHandlerDelegateTest {
 
   @Test
     public void shouldNotPublishToDlqAndLogException() {
-        when(kStreamsProcessorConfig.globalDlq().topic()).thenReturn(Optional.of(""));
+        when(kStreamsProcessorRuntimeConfig.globalDlq().topic()).thenReturn(Optional.of(""));
         when(globalDlqConfig.topic()).thenReturn(Optional.empty());
         ProducerRecord<byte[], byte[]> errorRecord = new ProducerRecord<>(TOPIC, PARTITION,
                 "key".getBytes(), "value".getBytes());
