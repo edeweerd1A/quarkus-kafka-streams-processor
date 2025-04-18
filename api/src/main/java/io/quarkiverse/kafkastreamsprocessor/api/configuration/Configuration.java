@@ -106,4 +106,14 @@ public interface Configuration {
      * @return The state store configuration to be used by the {@link Processor}
      */
     List<StoreConfiguration> getStoreConfigurations();
+
+    /**
+     * Store configuration to be used by the {@link Processor}. Use setter if you want to override it.
+     */
+    void setGlobalStoreConfigurations(List<StoreConfiguration> storeConfiguration);
+
+    /**
+     * @return the global state store configuration to be used by the {@link Processor}
+     */
+    List<StoreConfiguration> getGlobalStateConfigurations();
 }

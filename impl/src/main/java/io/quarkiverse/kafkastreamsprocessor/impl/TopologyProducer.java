@@ -191,6 +191,8 @@ public class TopologyProducer {
 
         configuration.getStoreConfigurations()
                 .forEach(storeConfiguration -> topology.addStateStore(storeConfiguration.getStoreBuilder(), PROCESSOR_NAME));
+        configuration.getStoreConfigurations()
+            .forEach(storeConfiguration -> topology.addGlobalStore(storeConfiguration.getStoreBuilder(), PROCESSOR_NAME));
         return topology;
     }
 }

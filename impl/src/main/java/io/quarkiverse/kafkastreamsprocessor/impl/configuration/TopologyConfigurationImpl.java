@@ -45,6 +45,7 @@ public class TopologyConfigurationImpl implements Configuration {
     private Serializer<?> sinkValueSerializer;
     private Serde<?> sourceValueSerde;
     private List<StoreConfiguration> storeConfigurations = Collections.emptyList();
+    private List<StoreConfiguration> globalStoreConfigurations = Collections.emptyList();
 
     /**
      * Configuration constructor
@@ -63,5 +64,12 @@ public class TopologyConfigurationImpl implements Configuration {
     @Override
     public void setStoreConfigurations(List<StoreConfiguration> storeConfigurations) {
         this.storeConfigurations = Collections.unmodifiableList(storeConfigurations);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setGlobalStoreConfigurations(List<StoreConfiguration> storeConfigurations) {
+        this.globalStoreConfigurations = Collections.unmodifiableList(storeConfigurations);
     }
 }
