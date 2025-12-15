@@ -7,8 +7,8 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>quarkus-kafka-streams-processor-protobuf-binding</artifactId>
-  <name>quarkus-kafka-streams-processor-protobuf-binding</name>
+  <artifactId>quarkus-kafka-streams-processor-protobuf-binding-protoc-3</artifactId>
+  <name>quarkus-kafka-streams-processor-protobuf-binding-protoc-3</name>
 
   <dependencyManagement>
     <dependencies>
@@ -29,10 +29,15 @@
     </dependencies>
   </dependencyManagement>
 
+  <properties>
+    <protobuf3.version>3.25.8</protobuf3.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
+      <version>${protobuf3.version}</version>
     </dependency>
   </dependencies>
 
@@ -77,6 +82,9 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <protocArtifact>com.google.protobuf:protoc:${protobuf3.version}:exe:${os.detected.classifier}</protocArtifact>
+        </configuration>
       </plugin>
     </plugins>
   </build>
